@@ -12,4 +12,4 @@ Just add these lines to you're emacs config
 ```
 
 ## 🎴 Preview
-![video demo](https://youtu.be/SWvGKLvxtew)
+![video demo(https://youtube.com)](https://youtu.be/SWvGKLvxtew)
