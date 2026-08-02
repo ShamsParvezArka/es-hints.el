@@ -1,5 +1,6 @@
 # es-hints.el
 > This package is in early beta. Right now it only supports(or atleast i've tasted for) C/C++. PRs are much appreciated.
+
 4coder like Scope hint implementation for emacs.
 
 ## Installation
@@ -11,4 +12,4 @@ Just add these lines to you're emacs config
 ```
 
 ## 🎴 Preview
-![Image](assets/es_hint_demo.mp4)
+![video demo](https://youtu.be/SWvGKLvxtew)
