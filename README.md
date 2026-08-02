@@ -11,5 +11,4 @@ Just add these lines to you're emacs config
 (add-hook 'c-mode-hook 'es-hints-mode)
 ```
 
-## 🎴 Preview
-[![Watch the video](https://youtube.com)](https://youtu.be/SWvGKLvxtew)
+> Take a look at this video demo ![demo](https://youtu.be/SWvGKLvxtew)
