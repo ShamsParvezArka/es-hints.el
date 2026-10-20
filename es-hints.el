@@ -5,7 +5,7 @@
 
 ;; Author    : Shams Parvez Arka <parvez6826@gmail.com>
 ;; URL       : https://github.com/ShamsParvezArka/es-hints.el
-;; Version   : 0.1
+;; Version   : 0.2
 ;; Commentary: "No matter how dim the light feels, your story is still playing
 ;;              and it's far from over"
 
@@ -28,7 +28,6 @@
 (defface es-hints-face
   '((t :inherit font-lock-comment-face
        :height 0.8
-       :background "unspecified-bg"
        :weight thin))
   "NOTE(arka): es-hints font configuration")
 
@@ -57,7 +56,20 @@
   :type 'integer
   :group 'es-hints)
 
-(defun es-hints--place-for-close (close-pos)
+(defun es-hints--hl-line-active-p ()
+  "Non-nil if hl-line is highlighting the current buffer."
+  (or (bound-and-true-p hl-line-mode)
+      (bound-and-true-p global-hl-line-mode)))
+
+(defun es-hints--region-covers-p (pos)
+  "Non-nil if the active region highlight covers the newline at POS."
+  (and (region-active-p)
+       (not (bound-and-true-p rectangle-mark-mode))
+       (not (bound-and-true-p cua--rectangle))
+       (<= (region-beginning) pos)
+       (< pos (region-end))))
+
+(defun es-hints--place-for-close (close-pos &optional current-bol)
   (save-excursion
     (goto-char close-pos)
     (condition-case nil
@@ -70,10 +82,20 @@
               (unless (string-empty-p label)
                 (goto-char close-pos)
                 (let* ((eol (line-end-position))
+                       ;; NOTE(arka): faces from other overlays (region,
+                       ;; hl-line) never reach overlay strings, so apply
+                       ;; them ourselves. Region first: it wins over hl-line.
+                       (bg (delq nil
+                                 (list (and (es-hints--region-covers-p eol)
+                                            'region)
+                                       (and current-bol
+                                            (= (line-beginning-position) current-bol)
+                                            (es-hints--hl-line-active-p)
+                                            'hl-line))))
                        (ov (make-overlay eol eol))
-                       (text (propertize label 'face 'es-hints-face)))
-                  (overlay-put ov 'after-string
-                               (concat " " text))
+                       (space (if bg (propertize " " 'face bg) " "))
+                       (text (propertize label 'face (cons 'es-hints-face bg))))
+                  (overlay-put ov 'after-string (concat space text))
                   (overlay-put ov 'es-hints t))))))
       (scan-error nil))))
 
@@ -87,7 +109,10 @@
     (let* ((chain (es-hints--scope-chain))
            (wstart (window-start))
            (wend (window-end nil t))
-           (state (list chain wstart wend)))
+           (bol (line-beginning-position))
+           (region (and (region-active-p)
+                        (cons (region-beginning) (region-end))))
+           (state (list chain wstart wend bol region)))
       (unless (equal state es-hints--last-state)
         (setq es-hints--last-state state)
         (remove-overlays (point-min) (point-max) 'es-hints t)
@@ -101,7 +126,7 @@
                     (let ((close-pos (point)))
                       (when (and (eq (char-before close-pos) ?\})
                                  (>= close-pos wstart) (<= close-pos wend))
-                        (es-hints--place-for-close close-pos))))
+                        (es-hints--place-for-close close-pos bol))))
                 (scan-error nil)))))))))
 
 (defun es-hints-refresh ()
@@ -116,9 +141,13 @@
       (progn
         (add-hook 'post-command-hook #'es-hints--update nil t)
         (add-hook 'window-scroll-functions #'es-hints--update nil t)
+        ;; NOTE(arka): some commands (M-w) drop the region after
+        ;; post-command-hook has run, so refresh when that happens too.
+        (add-hook 'deactivate-mark-hook #'es-hints--update nil t)
         (es-hints--update))
     (remove-hook 'post-command-hook #'es-hints--update t)
     (remove-hook 'window-scroll-functions #'es-hints--update t)
+    (remove-hook 'deactivate-mark-hook #'es-hints--update t)
     (setq es-hints--last-state nil)
     (remove-overlays (point-min) (point-max) 'es-hints t)))
 
