@@ -11,5 +11,5 @@ Just add these lines to you're emacs config
 (add-hook 'c-mode-hook 'es-hints-mode)
 ```
 
-> [!WARNIGN]
+> [!WARNING]
 > This extension will freeze your Emacs if you open massive files like [The SQLite Amalgamation](https://sqlite.org/amalgamation.html)
