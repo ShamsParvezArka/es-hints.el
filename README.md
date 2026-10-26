@@ -6,9 +6,9 @@
 ## Installation
 Just add these lines to you're emacs config
 ```lisp
-(add-to-list 'load-path "~/YOU'RE/DESIRED/PATH/TO/es-hints.el")
+(add-to-list 'load-path "~/PATH/TO/es-hints.el")
 (require 'es-hints)
-(add-hook 'c-mode-hook 'es-hints-mode)
+(add-hook 'c-mode-common-hook 'es-hints-mode)
 ```
 
 > Take a look at this video [demo](https://youtu.be/SWvGKLvxtew)
